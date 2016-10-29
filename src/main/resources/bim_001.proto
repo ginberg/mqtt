@@ -1,0 +1,136 @@
+option java_package = "com.gerinberg.mqtt";
+option java_outer_classname = "Bim001";
+
+message GpsInfo{
+	required int32 nrSats = 1;			// always indicate the nrSats, because this gives an indication
+	optional uint32 gpstimestamp = 2;
+	optional float latitude = 3;
+	optional float longitude = 4;
+	optional float heading = 5;
+	optional float speed = 6;
+	optional float altitude = 7;
+}
+
+
+message GsmInfo{
+	required int32 signalStrength = 1;
+	optional int32 mcc = 2;
+	optional int32 mnc = 3;
+	optional int32 lac = 4;
+	optional int32 cellid = 5;
+}
+
+
+message BasicInfo{
+	required uint32 timestamp = 1;		// RTC timestamp when the message is generated
+	required GpsInfo gpsInfo = 2;		// at least we need to know the status
+	required GsmInfo gsmInfo = 3;		// at least we need the signal strength
+	required float batteryVoltage = 8;	// always send the battery voltage for preventive maintenance
+}
+
+
+message SportsInfo{
+	optional uint32 heartRate = 1;
+	optional uint32 cadence = 2;
+	optional float power = 3;
+	optional float smo2 = 4;
+	optional sint32 accX = 5;
+	optional sint32 accY= 6;
+	optional sint32 accZ = 7;	
+}
+
+
+message Track{
+	required BasicInfo basicInfo = 1;
+}
+
+message Start{
+	required BasicInfo basicInfo = 1;
+}
+
+message Stop{
+	required BasicInfo basicInfo = 1;
+}
+
+
+message Data{
+	required uint32 timestamp = 1;
+	required GpsInfo gpsInfo = 2;
+	required SportsInfo sportsInfo = 3;
+}
+
+
+
+
+message Movement{
+	required BasicInfo basicInfo = 1;
+	required float acceleration = 2;
+	enum Movementstatus {STEADY = 1; 
+	MOVING = 2;}
+	required Movementstatus status = 3;
+}
+
+message BatteryLow{
+	required BasicInfo basicInfo = 1;
+}
+
+message Login{
+	required BasicInfo basicInfo = 1;
+	required fixed64 uid = 2;
+}
+
+message Reset{
+	required BasicInfo basicInfo = 1;
+	enum ResetCause {POWER = 1; 
+	WATCHDOG = 2;}
+	required ResetCause reset = 2;
+	required int32 firmwareversion = 3;
+}
+
+
+message Event{
+	enum Type {TRACK = 1; 
+	MOVEMENT = 2; 
+	BATTERYLOW = 3; 
+	LOGIN = 4; 
+	RESET = 5; 
+	DATA = 6; 
+	START = 7; 
+	STOP = 8;}
+	required Type type = 1;
+	optional Track track = 2;
+	optional Movement movement = 3;
+	optional BatteryLow batteryLow = 4;
+	optional Login login = 5;
+	optional Reset reset = 6;
+	repeated Data data = 7;
+	optional Start start= 8;
+	optional Stop stop = 9;
+
+}
+
+message Config{
+	required uint64 reference = 1;
+	optional uint64 trackinterval = 2 [default=60000];
+	optional uint32 motion_move_time_ms = 3 [default=15000];
+	optional uint32 motion_treshold = 4 [default=5];
+	optional uint32 motion_no_move_time_ms = 5 [default=20000];
+	optional uint32 gprs_connect_timeout_ms = 6 [default=120000];
+	optional uint32 gps_lock_timeout_ms = 7 [default=30000];
+	optional uint32 cfg_msg_timeout_ms = 8 [default=10000];
+	optional uint32 fault_sleep_time_ms = 9 [default=60000];
+	optional uint64 always_on_track_interval = 10 [default=5000];
+	optional uint64 sleep_track_interval = 11 [default=20000];
+	optional fixed32 operational_mode = 12 [default=1];
+	optional uint64 datainterval = 13 [default=5000];
+}
+
+message Ack{
+	required uint64 reference = 1;
+}
+
+message Version{
+	required int32 major = 1 [default=0];
+	required int32 minor = 2 [default=0];
+	required int32 revision = 3 [default=1];
+}
